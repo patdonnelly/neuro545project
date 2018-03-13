@@ -19,7 +19,7 @@ data_full.record_id = [];
 figure(1);
 scatter(data_full.wj_brs, data_full.wasi_fs2);
 xlabel('Basic Reading Skill');
-ylabel('Verbal/NonVerbal Intelligence);
+ylabel('Verbal/NonVerbal Intelligence');
 
 figure(2);
 scatter(data_full.ctopp_elision_ss, data_full.wj_lwid_ss);
@@ -64,3 +64,36 @@ biplot(coeff(:,1:2),'scores',score(:,1:2),'varlabels',...
     'v_17','v_18','v_19','v_20'});
 
 [coeff,score,latent,tsquared,explained] = pca(table2array(data_full));
+
+% zero in on composite scores
+data_composites = table(data_full.wj_brs, data_full.wj_rf, data_full.twre_index, ...
+    data_full.wasi_fs2, data_full.ctopp_pa, data_full.ctopp_rapid);
+data_composites.Properties.VariableNames = {'WJ_BRS', 'WJ_RF', ...
+    'TWRE_INDEX', 'WASI', 'CTOPP_PA', 'CTOPP_RAPID'}
+% compute covariance matrix of data 
+DataCovar_comp = cov(table2array(data_composites));
+
+% look at eigenvalues
+DataEigVal_comp = eig(DataCovar_comp);
+figure(5)
+clf
+plot(DataEigVal_comp, 'o')
+xlabel('component')
+ylabel('variance')
+
+% zero in on some eigenvalues
+[EigVec_comp, EigVal_comp] = eigs(DataCovar_comp);
+
+% look at these
+figure(6)
+clf
+plot(EigVec_comp);
+xlabel('test');
+
+[coeff_comp,score_comp,latent_comp] = pca(table2array(data_composites));
+Xcentered = score_comp*coeff_comp';
+biplot(coeff_comp(:,1:2),'scores',score_comp(:,1:2),'varlabels',...
+    data_composites.Properties.VariableNames);
+
+[coeff,score,latent,tsquared,explained] = pca(table2array(data_full));
+
